@@ -1,0 +1,17 @@
+{
+  extends: 'google',
+  env: {
+    "es6": true,
+    "node": true,
+    "mocha": true,
+    "mongo": true
+  },
+
+  parser: "babel-eslint",
+  rules: {
+    'require-jsdoc': 'off',
+    'max-len': 'off',
+    'object-curly-spacing': [2, 'always'],
+    camelcase: ["error", {properties: "never"}]
+  }
+}

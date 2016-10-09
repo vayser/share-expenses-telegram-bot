@@ -1,0 +1,35 @@
+{
+  "name": "expense-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "config": "^1.21.0",
+    "lodash.isfinite": "^3.3.2",
+    "mongoose": "^4.6.3",
+    "mongoose-timestamp": "^0.6.0",
+    "node-telegram-bot-api": "^0.23.3"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.0.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-register": "^6.16.3",
+    "eslint": "^3.7.1",
+    "eslint-config-google": "^0.6.0",
+    "expect.js": "^0.3.1",
+    "mocha": "^3.1.0",
+    "nodemon": "^1.11.0"
+  },
+  "scripts": {
+    "start-dev": "npm run nodemon",
+    "nodemon": "nodemon run-app",
+    "test": "NODE_ENV=test node run-test.js"
+  },
+  "eslintConfig": {
+    "extends": "google"
+  },
+  "author": "vayser",
+  "license": "ISC"
+}
