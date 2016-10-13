@@ -1,6 +1,6 @@
 import expect from 'expect.js';
 
-export function getTestMessageJSON(text) {
+export function getTestMessageJSON(text, override) {
   return {
     text,
     message_id: 87,
@@ -15,11 +15,12 @@ export function getTestMessageJSON(text) {
        type: 'group',
        all_members_are_administrators: true },
     date: 1476007995,
-    entities: [{ type: 'bot_command', offset: 0, length: 5 }]
+    entities: [{ type: 'bot_command', offset: 0, length: 5 }],
+    ...override
   };
 }
 
-export function getSendMessage(expectedResponseText) {
+export function getSendMessageAssertion(expectedResponseText) {
   return function(chatId, responseText) {
     expect(responseText).to.be.eql(expectedResponseText);
   };

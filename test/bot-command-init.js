@@ -10,25 +10,25 @@ const {
 } = constants;
 
 import init from '../chat-commands/init';
-import { getTestMessageJSON, getSendMessage } from './utils';
+import { getTestMessageJSON, getSendMessageAssertion } from './utils';
 
 describe('COMMAND: /init', () => {
   describe('when comand has wrong format', () => {
     it('should return error message if amount is not specified', async () => {
       const msg = getTestMessageJSON('/init PartyTitle');
-      const sendMessage = getSendMessage('`ERROR`: @goodman, please, specify correct *amount* and *title*: /init {amount} {title}');
+      const sendMessage = getSendMessageAssertion('`ERROR`: @goodman, please, specify correct *amount* and *title*: /init {amount} {title}');
       await init.bind({ sendMessage })(msg, msg.text.match(INIT_COMMAND_PATTERN));
     });
 
     it('should return error message if title is not specified', async () => {
       const msg = getTestMessageJSON('/init 200');
-      const sendMessage = getSendMessage('`ERROR`: @goodman, please, specify correct *amount* and *title*: /init {amount} {title}');
+      const sendMessage = getSendMessageAssertion('`ERROR`: @goodman, please, specify correct *amount* and *title*: /init {amount} {title}');
       await init.bind({ sendMessage })(msg, msg.text.match(INIT_COMMAND_PATTERN));
     });
 
     it('should return error message if amount is not a number', async () => {
       const msg = getTestMessageJSON('/init 200test test-title');
-      const sendMessage = getSendMessage('`ERROR`: @goodman, please, specify correct *amount* and *title*: /init {amount} {title}');
+      const sendMessage = getSendMessageAssertion('`ERROR`: @goodman, please, specify correct *amount* and *title*: /init {amount} {title}');
       await init.bind({ sendMessage })(msg, msg.text.match(INIT_COMMAND_PATTERN));
     });
   });
@@ -41,15 +41,23 @@ describe('COMMAND: /init', () => {
     });
 
     const successMessage = '@goodman created *party-title* expense with amount *200*, participants can share expense by typing /in /out';
+    it('should return error if active expense already exists', async () => {
+      const msg = getTestMessageJSON('/init 200 party-title');
+      const msg2 = getTestMessageJSON('/init 200 party2-title');
+      const sendMessage = getSendMessageAssertion('`ERROR`: Please, commit current expense *party-title* to create new');
+      await init.bind({ sendMessage: () => {} })(msg, msg.text.match(INIT_COMMAND_PATTERN));
+      await init.bind({ sendMessage })(msg2, msg2.text.match(INIT_COMMAND_PATTERN));
+    });
+
     it('should return success message', async () => {
       const msg = getTestMessageJSON('/init 200 party-title');
-      const sendMessage = getSendMessage(successMessage);
+      const sendMessage = getSendMessageAssertion(successMessage);
       await init.bind({ sendMessage })(msg, msg.text.match(INIT_COMMAND_PATTERN));
     });
 
     it('should create expense with correct amount title and other details', async () => {
       const msg = getTestMessageJSON('/init 200 party-title');
-      const sendMessage = getSendMessage(successMessage);
+      const sendMessage = getSendMessageAssertion(successMessage);
       await init.bind({ sendMessage })(msg, msg.text.match(INIT_COMMAND_PATTERN));
       const expense = await Expense.findOne();
       expect(expense.amount).to.be.eql(200);
