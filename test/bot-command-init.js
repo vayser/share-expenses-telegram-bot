@@ -40,7 +40,7 @@ describe('COMMAND: /init', () => {
       await Expense.remove();
     });
 
-    const successMessage = '@goodman created *party-title* expense with amount *200*, participants can share expense by typing /in /out';
+    const successMessage = '@goodman created *party-title* expense with amount *200*, participants can share expense by typing /ok /out';
     it('should return error if active expense already exists', async () => {
       const msg = getTestMessageJSON('/init 200 party-title');
       const msg2 = getTestMessageJSON('/init 200 party2-title');
@@ -55,13 +55,13 @@ describe('COMMAND: /init', () => {
       await init.bind({ sendMessage })(msg, msg.text.match(INIT_COMMAND_PATTERN));
     });
 
-    it('should create expense with correct amount title and other details', async () => {
+    it('should create expense with correct amount title and other details', async function() {
       const msg = getTestMessageJSON('/init 200 party-title');
       const sendMessage = getSendMessageAssertion(successMessage);
       await init.bind({ sendMessage })(msg, msg.text.match(INIT_COMMAND_PATTERN));
       const expense = await Expense.findOne();
-      expect(expense.amount).to.be.eql(200);
-      expect(expense.title).to.be.eql('party-title');
+      expect(expense).to.have.property('amount', 200);
+      expect(expense).to.have.property('title', 'party-title');
     });
   });
 });

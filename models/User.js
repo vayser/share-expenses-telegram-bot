@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import timestamps from 'mongoose-timestamp';
 import { findOrCreate } from '../db/plugins';
 
-let User = new Schema({
+let UserSchema = new Schema({
   telegramId: {
     type: Number,
     required: true
@@ -12,7 +12,11 @@ let User = new Schema({
   username: String
 });
 
-User.plugin(timestamps);
-User.plugin(findOrCreate);
+UserSchema.methods.toString = function() {
+  return `${this.firstName} @${this.username} ${this.lastName}`;
+};
 
-export default mongoose.model('User', User);
+UserSchema.plugin(timestamps);
+UserSchema.plugin(findOrCreate);
+
+export default mongoose.model('User', UserSchema);

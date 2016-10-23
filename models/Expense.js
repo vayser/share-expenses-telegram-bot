@@ -14,15 +14,15 @@ let ExpenseSchema = new Schema({
     type: Schema.Types.ObjectId
   },
   host: {
-    ref: 'Participant',
+    ref: 'User',
     type: Schema.Types.ObjectId
   },
   notes: [{
     text: String,
     date: Date
   }],
-  participants: [{
-    ref: 'Participant',
+  debtors: [{
+    ref: 'Debtor',
     type: Schema.Types.ObjectId
   }],
   status: {
@@ -61,6 +61,20 @@ ExpenseSchema.methods.commit = async function() {
   await this.save();
 };
 
+ExpenseSchema.methods.getPersonalCredit = function() {
+  const credit = this.amount / (this.debtors.length + 1); // 1 is host
+
+  return Math.round(credit * 100) / 100;
+};
+
+ExpenseSchema.methods.getDebtorsListText = async function() {
+  const debtors = await this.model('Debtor').find({ _id: { $in: this.debtors } }).populate('user');
+  const personalCredit = this.getPersonalCredit();
+  return debtors.map(d => {
+    return `${d.user.toString()} - *${personalCredit}*`;
+  }).join('\r\n');
+};
+
 ExpenseSchema.statics.getActiveExpense = async function(options) {
   const { chatId } = options;
 
@@ -77,7 +91,6 @@ ExpenseSchema.statics.getActiveExpense = async function(options) {
 
   return expense;
 };
-
 
 ExpenseSchema.plugin(timestamps);
 
