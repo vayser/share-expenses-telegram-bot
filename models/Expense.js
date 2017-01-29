@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import timestamps from 'mongoose-timestamp';
 import constants from '../constants';
 
-const { EXPENSE_STATUS } = constants;
+const { EXPENSE_STATUS, EXPENSE_REPLY_MARKUP } = constants;
 
 let ExpenseSchema = new Schema({
   amount: {
@@ -35,6 +35,50 @@ let ExpenseSchema = new Schema({
     required: true
   }
 });
+
+ExpenseSchema.methods.getMessageText = function(markup, { user } = {}) {
+  user = user || this.get('host');
+  const { username } = user;
+  const { amount, title } = this;
+
+  const detailsText = `Author: ${user.firstName} @${username} ${user.lastName} \r\nExpense: *${title}*\r\nAmount: *${amount}*`;
+
+  if (markup === EXPENSE_REPLY_MARKUP.DETAILS) {
+    return detailsText;
+  }
+};
+
+ExpenseSchema.methods.getReplyMarkup = function(markup) {
+  if (markup === EXPENSE_REPLY_MARKUP.DETAILS) {
+    return {
+      inline_keyboard: [
+        [{
+          text: '✅ YES',
+          callback_data: JSON.stringify({
+            command: 'ok',
+            expenseId: this.get('id')
+          })
+        }, {
+          text: '❌ NO',
+          callback_data: JSON.stringify({
+            command: 'out',
+            expenseId: this.get('id')
+          })
+        }],
+        ...this.debtors.map((debtor, index) => {
+          const { firstName, lastName } = debtor.get('user');
+          return [{
+            text: `${++index}. ${firstName} ${lastName} - $${this.getPersonalCredit()}`,
+            callback_data: JSON.stringify({
+              command: 'out',
+              expenseId: this.get('id')
+            })
+          }];
+        })
+      ]
+    };
+  }
+};
 
 ExpenseSchema.methods.isHost = async function(user) {
   if (!user) {

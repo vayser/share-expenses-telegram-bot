@@ -1,0 +1,25 @@
+TODO: 
+
+try to fix 1 item from list below every day
+
+### APP ###
+
+High priority (mvp)
+* HANDLE command errors (catch errors, mostly for DX)
+* HANDLE callback requests properly, add success messages, show warnings
+* GROUP debtors in detailed expense view
+* REMOVING debtors by click NO button
+* REPAID
+* UNREPAID
+* EXPENSES LIST (global/in chat) 
+
+Low priority
+* SETTINGS (just design, probably set currency)
+* NOTIFICATION when debt was repaid (by single person, by all participants)
+* DEBTORS LIST (show ballance, active expenses, forgive all)
+* DEADLINE (investigate)
+* HANDLE USER TIMEZONE
+
+### ENV ###
+* travis CI
+* code coverage

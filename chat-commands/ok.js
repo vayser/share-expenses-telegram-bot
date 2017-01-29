@@ -1,65 +1,50 @@
-import Chat from '../models/Chat';
-import User from '../models/User';
-import Debtor from '../models/Debtor';
 import Expense from '../models/Expense';
+import Debtor from '../models/Debtor';
 import constants from '../constants';
-const { EXPENSE_STATUS, DEBTOR_STATUS } = constants;
+import { chain, getCallbackUser } from '../middlewares';
 
-export default async function handleOk(msg, match) {
-  const {
-    text,
-    chat: {
-      id: chatId,
-      title: chatTitle,
-      type: chatType
-    },
-    from: {
-      id: userId,
-      first_name: firstName,
-      last_name: lastName,
-      username
+const { EXPENSE_REPLY_MARKUP, DEBTOR_STATUS } = constants;
+
+export default async function handleOk(msg, data) {
+  await chain.call(this, msg, data)(
+    getCallbackUser,
+    async (msg, data, next) => {
+      try {
+        const { expenseId, callbackUser } = data;
+        const { message_id, chat: { id: chat_id } } = msg;
+
+        const expense = await Expense.findById(expenseId);
+
+        const debtor = await Debtor.create({
+          user: callbackUser.get('id'),
+          expense: expense.get('id'),
+          status: DEBTOR_STATUS.ACTIVE
+        });
+
+        expense.set('debtors', [
+          ...expense.debtors,
+          debtor.get('id')
+        ]);
+
+        await expense.populate('host').populate({
+          path: 'debtors',
+          populate: {
+            path: 'user'
+          }
+        }).execPopulate();
+
+        await expense.save();
+
+        await this.editMessageText(expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
+          message_id,
+          chat_id,
+          parse_mode: 'Markdown',
+          reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
+        });
+      } catch (e) {
+        console.log(e);
+        console.log(e.stack);
+      }
     }
-  } = msg;
-
-  const NO_ACTIVE_EXPENSE_TEXT = `\`ERROR\`: @${username}, there are no active expenses in chat`;
-
-  const chat = await Chat.findOne({ telegramId: chatId });
-
-  if (!chat) {
-    return this.sendMessage(chatId, NO_ACTIVE_EXPENSE_TEXT, { parse_mode: 'Markdown' });
-  }
-
-  const expense = await Expense.findOne({
-    chat: chat.get('id'),
-    status: EXPENSE_STATUS.ACTIVE
-  });
-
-  if (!expense) {
-    return this.sendMessage(chatId, NO_ACTIVE_EXPENSE_TEXT, { parse_mode: 'Markdown' });
-  }
-
-  let SUCCESS_APPLIED_TO_SHARE_EXPENSE = `@${username}, applied to share *${expense.title}* expense with amount *${expense.amount}*`;
-
-  const user = await User.findOrCreate({ telegramId: userId }, {
-    telegramId: userId,
-    firstName,
-    lastName,
-    username
-  });
-
-  const debtor = await Debtor.create({
-    user: user.get('id'),
-    expense: expense.get('id'),
-    status: DEBTOR_STATUS.ACTIVE
-  });
-
-  expense.set('debtors', [
-    ...expense.debtors,
-    debtor.get('id')
-  ]);
-
-  await expense.save();
-  SUCCESS_APPLIED_TO_SHARE_EXPENSE += '\r\n\r\nDebtors list:\r\n\r\n' + (await expense.getDebtorsListText());
-
-  this.sendMessage(chatId, SUCCESS_APPLIED_TO_SHARE_EXPENSE, { parse_mode: 'Markdown' });
+  );
 }
