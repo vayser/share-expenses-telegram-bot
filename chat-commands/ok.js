@@ -9,42 +9,39 @@ export default async function handleOk(msg, data) {
   await chain.call(this, msg, data)(
     getCallbackUser,
     async (msg, data, next) => {
-      try {
-        const { expenseId, callbackUser } = data;
-        const { message_id, chat: { id: chat_id } } = msg;
+      const { expenseId, callbackUser } = data;
+      const { queryId, message_id, chat: { id: chat_id } } = msg;
 
-        const expense = await Expense.findById(expenseId);
+      const expense = await Expense.findById(expenseId);
 
-        const debtor = await Debtor.create({
-          user: callbackUser.get('id'),
-          expense: expense.get('id'),
-          status: DEBTOR_STATUS.ACTIVE
-        });
+      const debtor = await Debtor.create({
+        user: callbackUser.get('id'),
+        expense: expense.get('id'),
+        status: DEBTOR_STATUS.UNREPAID
+      });
 
-        expense.set('debtors', [
-          ...expense.debtors,
-          debtor.get('id')
-        ]);
+      expense.set('debtors', [
+        ...expense.debtors,
+        debtor.get('id')
+      ]);
 
-        await expense.populate('host').populate({
-          path: 'debtors',
-          populate: {
-            path: 'user'
-          }
-        }).execPopulate();
+      await expense.populate('host').populate({
+        path: 'debtors',
+        populate: {
+          path: 'user'
+        }
+      }).execPopulate();
 
-        await expense.save();
+      await expense.save();
 
-        await this.editMessageText(expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
-          message_id,
-          chat_id,
-          parse_mode: 'Markdown',
-          reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
-        });
-      } catch (e) {
-        console.log(e);
-        console.log(e.stack);
-      }
+      await this.editMessageText(expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
+        message_id,
+        chat_id,
+        parse_mode: 'Markdown',
+        reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
+      });
+
+      this.answerCallbackQuery(queryId, 'You are applied to expense');
     }
   );
 }

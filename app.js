@@ -1,35 +1,38 @@
 import TelegramBot from 'node-telegram-bot-api';
+import PrettyError from 'pretty-error';
 import config from 'config';
 import init from './chat-commands/init';
 import ok from './chat-commands/ok';
 import out from './chat-commands/out';
 import commit from './chat-commands/commit';
+import repay from './chat-commands/repay';
+import unrepay from './chat-commands/unrepay';
 
 import constants from './constants';
 import './db';
 
+const pe = new PrettyError();
+
 const bot = new TelegramBot(config.get('botToken'), { polling: true });
 
 const {
-  INIT_COMMAND_PATTERN,
-  OK_COMMAND_PATTERN,
-  OUT_COMMAND_PATTERN,
-  COMMIT_COMMAND_PATTERN
+  INIT_COMMAND_PATTERN
 } = constants;
 
 function matcher(pattern, handler) {
-  bot.onText(pattern, (msg, match) => {
-    handler.call(bot, msg);
+  bot.onText(pattern, async (msg, match) => {
+    try {
+      await handler.call(bot, msg);
+    } catch (e) {
+      console.log(pe.render(e));
+    }
   });
 }
 
 matcher(INIT_COMMAND_PATTERN, init);
-matcher(OK_COMMAND_PATTERN, ok);
-matcher(OUT_COMMAND_PATTERN, out);
-matcher(COMMIT_COMMAND_PATTERN, commit);
 
-bot.on('callback_query', query => {
-  const commands = { init, ok, out, commit };
+bot.on('callback_query', async query => {
+  const commands = { init, ok, out, commit, repay, unrepay };
 
   let { data } = query;
   try {
@@ -42,6 +45,13 @@ bot.on('callback_query', query => {
     return;
   }
 
-  commands[data.command].apply(bot, [{ ...query.message, callbackFrom: query.from }, data]);
-  bot.answerCallbackQuery(query.id, '');
+  try {
+    await commands[data.command].apply(bot, [{
+      ...query.message,
+      callbackFrom: query.from,
+      queryId: query.id
+    }, data]);
+  } catch (e) {
+    console.log(pe.render(e));
+  }
 });

@@ -2,6 +2,7 @@ import config from 'config';
 import mongoose from 'mongoose';
 mongoose.Promise = global.Promise;
 mongoose.connect(config.get('db.connection'));
+// mongoose.set('debug', true);
 
 mongoose.connection.on('connected', () => {
   console.log(`Connected to ${config.get('db.connection')}`);

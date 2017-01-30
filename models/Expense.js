@@ -1,8 +1,15 @@
 import mongoose, { Schema } from 'mongoose';
+import groupBy from 'lodash/groupby';
 import timestamps from 'mongoose-timestamp';
 import constants from '../constants';
 
-const { EXPENSE_STATUS, EXPENSE_REPLY_MARKUP } = constants;
+const { EXPENSE_STATUS, EXPENSE_REPLY_MARKUP, DEBTOR_STATUS } = constants;
+
+const emoji = {
+  debtorsAmount: ['', '', '👫', '👨‍👩‍👧', '👨‍👩‍👧‍👦'],
+  [DEBTOR_STATUS.UNREPAID]: '',
+  [DEBTOR_STATUS.REPAID]: '💵'
+};
 
 let ExpenseSchema = new Schema({
   amount: {
@@ -48,30 +55,61 @@ ExpenseSchema.methods.getMessageText = function(markup, { user } = {}) {
   }
 };
 
+ExpenseSchema.methods.repay = async function(userId) {
+  await this.model('Debtor').update({ user: userId, expense: this.get('id') }, { status: DEBTOR_STATUS.REPAID }, { multi: true });
+};
+
+ExpenseSchema.methods.unrepay = async function(userId) {
+  await this.model('Debtor').update({ user: userId, expense: this.get('id') }, { status: DEBTOR_STATUS.UNREPAID }, { multi: true });
+};
+
+ExpenseSchema.methods.isUserRepaid = function(userId) {
+  return this.debtors
+    .filter(debtor => debtor.get('user').get('id') === userId)
+    .every(debtor => {
+      return debtor.status === DEBTOR_STATUS.REPAID;
+    });
+};
+
 ExpenseSchema.methods.getReplyMarkup = function(markup) {
   if (markup === EXPENSE_REPLY_MARKUP.DETAILS) {
+    const debtors = groupBy(this.debtors, debtor => {
+      return debtor.get('user').get('id');
+    });
+
     return {
       inline_keyboard: [
         [{
-          text: '✅ YES',
+          text: '+1 👍',
           callback_data: JSON.stringify({
             command: 'ok',
             expenseId: this.get('id')
           })
         }, {
-          text: '❌ NO',
+          text: '-1 👎',
           callback_data: JSON.stringify({
             command: 'out',
             expenseId: this.get('id')
           })
         }],
-        ...this.debtors.map((debtor, index) => {
-          const { firstName, lastName } = debtor.get('user');
+        ...Object.keys(debtors).map((userId, index) => {
+          const { firstName = '', lastName = '' } = debtors[userId][0].get('user');
+          const isRepaid = this.isUserRepaid(userId);
+
+          const userName = [firstName, lastName].join(' ').trim();
+          const statusIcon = isRepaid ? emoji[DEBTOR_STATUS.REPAID] : emoji[DEBTOR_STATUS.UNREPAID];
+
+          let btnText = `${++index}. ${statusIcon} ${userName} - $${Math.round(this.getPersonalCredit() * debtors[userId].length)}`;
+
+          if (debtors[userId].length > 1) {
+            btnText += ` x ${emoji.debtorsAmount[debtors[userId].length] || debtors[userId].length}`;
+          }
+
           return [{
-            text: `${++index}. ${firstName} ${lastName} - $${this.getPersonalCredit()}`,
+            text: btnText,
             callback_data: JSON.stringify({
-              command: 'out',
-              expenseId: this.get('id')
+              command: isRepaid ? 'unrepay' : 'repay',
+              debtorId: debtors[userId][0].get('id')
             })
           }];
         })
@@ -106,7 +144,7 @@ ExpenseSchema.methods.commit = async function() {
 };
 
 ExpenseSchema.methods.getPersonalCredit = function() {
-  const credit = this.amount / (this.debtors.length + 1); // 1 is host
+  const credit = this.amount / (this.debtors.length); // 1 is host
 
   return Math.round(credit * 100) / 100;
 };

@@ -11,9 +11,5 @@ export default {
     COMMITED: 'commited',
     CANCELED: 'canceled'
   },
-  DEBTOR_STATUS: {
-    ACTIVE: 'active',
-    CLOSED: 'closed',
-    OUT: 'out'
-  }
+  DEBTOR_STATUS: constantMirror('UNREPAID', 'REPAID')
 };

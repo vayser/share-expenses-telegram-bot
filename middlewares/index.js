@@ -1,27 +1,32 @@
 import Expense from '../models/Expense';
+import Debtor from '../models/Debtor';
 import Chat from '../models/Chat';
 import User from '../models/User';
 
 export function chain(msg, data = {}) {
   const that = this;
   return async function(...args) {
-    return new Promise((resolve, reject) => {
-      function iter(...args) {
+    return new Promise(async (resolve, reject) => {
+      async function iter(...args) {
         const fn = args.shift();
 
         if (!fn) {
           return resolve();
         }
 
-        fn.call(that, msg, data, breakChain => {
-          if (breakChain) {
-            return resolve();
-          }
-          iter.apply(that, args);
-        });
+        try {
+          await fn.call(that, msg, data, async breakChain => {
+            if (breakChain) {
+              return resolve();
+            }
+            await iter.apply(that, args);
+          });
+        } catch (e) {
+          reject(e);
+        }
       }
 
-      iter.apply(that, args);
+      await iter.apply(that, args);
     });
   };
 }
@@ -42,6 +47,22 @@ export async function getChat(msg, data, next) {
   });
 
   data.chat = chat;
+  next();
+}
+
+export async function getDebtor(msg, data, next) {
+  const { debtorId } = data;
+  data.debtor = await Debtor.findById(debtorId);
+  next();
+}
+
+export async function getExpense(msg, data, next) {
+  const { expenseId, debtorId } = data;
+  if (expenseId) {
+    data.expense = await Expense.findById(expenseId);
+  } else {
+    data.expense = await Expense.findOne({ debtors: debtorId });
+  }
   next();
 }
 

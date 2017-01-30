@@ -5,12 +5,12 @@ try to fix 1 item from list below every day
 ### APP ###
 
 High priority (mvp)
-* HANDLE command errors (catch errors, mostly for DX)
-* HANDLE callback requests properly, add success messages, show warnings
-* GROUP debtors in detailed expense view
-* REMOVING debtors by click NO button
-* REPAID
-* UNREPAID
+✅ HANDLE command errors (catch errors, mostly for DX)
+✅ HANDLE callback requests properly, add success messages, show warnings
+✅ REMOVING debtors by click NO button
+✅ GROUP debtors in detailed expense view
+✅ REPAID
+✅ UNREPAID
 * EXPENSES LIST (global/in chat) 
 
 Low priority
@@ -19,6 +19,9 @@ Low priority
 * DEBTORS LIST (show ballance, active expenses, forgive all)
 * DEADLINE (investigate)
 * HANDLE USER TIMEZONE
+* INLINE MODE, send expense
+* Major hustler in group
+* Website, billings integration
 
 ### ENV ###
 * travis CI
