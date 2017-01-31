@@ -11,9 +11,10 @@ High priority (mvp)
 ✅ GROUP debtors in detailed expense view
 ✅ REPAID
 ✅ UNREPAID
-* EXPENSES LIST (global/in chat) 
+✅ EXPENSES LIST (global/in chat) 
 
 Low priority
+* reply keyboard
 * SETTINGS (just design, probably set currency)
 * NOTIFICATION when debt was repaid (by single person, by all participants)
 * DEBTORS LIST (show ballance, active expenses, forgive all)
@@ -24,5 +25,6 @@ Low priority
 * Website, billings integration
 
 ### ENV ###
+* deploy to server
 * travis CI
 * code coverage

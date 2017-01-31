@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import moment from 'moment';
 import groupBy from 'lodash/groupby';
 import timestamps from 'mongoose-timestamp';
 import constants from '../constants';
@@ -72,6 +73,16 @@ ExpenseSchema.methods.isUserRepaid = function(userId) {
 };
 
 ExpenseSchema.methods.getReplyMarkup = function(markup) {
+  if (markup === EXPENSE_REPLY_MARKUP.LIST) {
+    return [{
+      text: `${this.chat.title} : ${this.amount}`,
+      callback_data: JSON.stringify({
+        expenseId: this.get('id'),
+        command: 'open'
+      })
+    }];
+  }
+
   if (markup === EXPENSE_REPLY_MARKUP.DETAILS) {
     const debtors = groupBy(this.debtors, debtor => {
       return debtor.get('user').get('id');

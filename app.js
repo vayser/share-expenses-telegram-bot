@@ -2,6 +2,8 @@ import TelegramBot from 'node-telegram-bot-api';
 import PrettyError from 'pretty-error';
 import config from 'config';
 import init from './chat-commands/init';
+import list from './chat-commands/list';
+import open from './chat-commands/open';
 import ok from './chat-commands/ok';
 import out from './chat-commands/out';
 import commit from './chat-commands/commit';
@@ -16,7 +18,8 @@ const pe = new PrettyError();
 const bot = new TelegramBot(config.get('botToken'), { polling: true });
 
 const {
-  INIT_COMMAND_PATTERN
+  INIT_COMMAND_PATTERN,
+  LIST_COMMAND_PATTERN
 } = constants;
 
 function matcher(pattern, handler) {
@@ -30,9 +33,10 @@ function matcher(pattern, handler) {
 }
 
 matcher(INIT_COMMAND_PATTERN, init);
+matcher(LIST_COMMAND_PATTERN, list);
 
 bot.on('callback_query', async query => {
-  const commands = { init, ok, out, commit, repay, unrepay };
+  const commands = { ok, out, repay, unrepay, open };
 
   let { data } = query;
   try {
