@@ -4,9 +4,11 @@ module.exports = {
   host: '127.0.0.1',
   botToken: '229399099:AAEWRMyjSu8-zEIrThgzoUgwB0wAdNC7gEU',
   db: {
-    host: '127.0.0.1',
-    port: '27017',
+    host: 'ds139939.mlab.com',
+    port: '39939',
     name: 'track-expenses-bot',
-    connection: _(cfg => `mongodb://${cfg.db.host}:${cfg.db.port}/${cfg.db.name}`)
+    user: 'wice',
+    password: 'qQ190391',
+    connection: _(cfg => `mongodb://${cfg.db.user}:${cfg.db.password}@${cfg.db.host}:${cfg.db.port}/${cfg.db.name}`)
   }
 };
