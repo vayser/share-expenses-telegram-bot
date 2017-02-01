@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import moment from 'moment';
-import groupBy from 'lodash/groupby';
+import groupBy from 'lodash/groupBy';
 import timestamps from 'mongoose-timestamp';
 import constants from '../constants';
 
