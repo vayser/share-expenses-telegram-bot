@@ -9,22 +9,10 @@ export default async function handleList(msg, data) {
     getChat,
     getUser,
     async (msg, data, next) => {
-      const {
-        chat: { type }
-      } = msg;
-
       const { chat, user } = data;
 
-      let expenses;
-      let text;
-
-      if (type === 'private') {
-        expenses = await Expense.find({ host: user.get('id') }).populate('chat');
-        text = 'List of your expenses for *ALL* chats';
-      } else {
-        expenses = await Expense.find({ host: user.get('id'), chat: chat.get('id') }).populate('chat');
-        text = 'List of your expenses for *CURRENT* chats';
-      }
+      let expenses = await Expense.find({ host: user.get('id') }).populate('chat');
+      let text = 'List of your expenses';
 
       this.sendMessage(chat.get('telegramId'), text, {
         parse_mode: 'Markdown',

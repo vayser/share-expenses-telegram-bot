@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import moment from 'moment';
 import groupBy from 'lodash/groupBy';
 import timestamps from 'mongoose-timestamp';
 import constants from '../constants';
@@ -14,12 +13,7 @@ const emoji = {
 
 let ExpenseSchema = new Schema({
   amount: {
-    type: Number,
-    required: true
-  },
-  chat: {
-    ref: 'Chat',
-    type: Schema.Types.ObjectId
+    type: Number
   },
   host: {
     ref: 'User',
@@ -35,12 +29,12 @@ let ExpenseSchema = new Schema({
   }],
   status: {
     type: String,
+    default: EXPENSE_STATUS.ACTIVE,
     enum: [EXPENSE_STATUS.ACTIVE, EXPENSE_STATUS.COMMITED, EXPENSE_STATUS.CANCELED],
     required: true
   },
   title: {
-    type: String,
-    required: true
+    type: String
   }
 });
 
@@ -72,10 +66,10 @@ ExpenseSchema.methods.isUserRepaid = function(userId) {
     });
 };
 
-ExpenseSchema.methods.getReplyMarkup = function(markup) {
+ExpenseSchema.methods.getReplyMarkup = function(markup, { share } = {}) {
   if (markup === EXPENSE_REPLY_MARKUP.LIST) {
     return [{
-      text: `${this.chat.title} : ${this.amount}`,
+      text: `${this.title} : ${this.amount}`,
       callback_data: JSON.stringify({
         expenseId: this.get('id'),
         command: 'open'
@@ -90,6 +84,7 @@ ExpenseSchema.methods.getReplyMarkup = function(markup) {
 
     return {
       inline_keyboard: [
+        share && [{ switch_inline_query: this._id, text: 'Share' }],
         [{
           text: '+1 👍',
           callback_data: JSON.stringify({
@@ -124,7 +119,7 @@ ExpenseSchema.methods.getReplyMarkup = function(markup) {
             })
           }];
         })
-      ]
+      ].filter(Boolean)
     };
   }
 };
@@ -166,23 +161,6 @@ ExpenseSchema.methods.getDebtorsListText = async function() {
   return debtors.map(d => {
     return `${d.user.toString()} - *${personalCredit}*`;
   }).join('\r\n');
-};
-
-ExpenseSchema.statics.getActiveExpense = async function(options) {
-  const { chatId } = options;
-
-  const chat = await this.model('Chat').findOne({ telegramId: chatId });
-
-  if (!chat) {
-    return;
-  }
-
-  const expense = await this.findOne({
-    chat: chat.get('id'),
-    status: EXPENSE_STATUS.ACTIVE
-  });
-
-  return expense;
 };
 
 ExpenseSchema.plugin(timestamps);

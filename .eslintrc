@@ -12,6 +12,6 @@
     'require-jsdoc': 'off',
     'max-len': 'off',
     'object-curly-spacing': [2, 'always'],
-    camelcase: ["error", {properties: "never"}]
+    'camelcase': 'off'
   }
 }

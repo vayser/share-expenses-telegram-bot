@@ -47,7 +47,7 @@ export default async function handleInit(msg, data) {
 
       this.sendMessage(chatId, expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS, { user }), {
         parse_mode: 'Markdown',
-        reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
+        reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS, { share: true })
       });
 
       next();

@@ -107,17 +107,3 @@ export async function getUser(msg, data, next) {
   data.user = user;
   next();
 }
-
-export async function getActiveExpense(msg, data, next) {
-  const {
-    chat: {
-      id: chatId
-    }
-  } = msg;
-
-  const activeExpense = await Expense.getActiveExpense({ chatId });
-
-  data.activeExpense = activeExpense;
-
-  next();
-}

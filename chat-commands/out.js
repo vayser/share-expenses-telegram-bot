@@ -9,7 +9,7 @@ export default async function handleOut(msg, data) {
     getCallbackUser,
     getExpense,
     async (msg, data, next) => {
-      const { queryId, message_id, chat: { id: chat_id } } = msg;
+      const { queryId, message_id, inline_message_id, chat_id } = msg;
       const { expense, callbackUser } = data;
       const { debtors: debtorsIdList } = expense;
 
@@ -36,6 +36,7 @@ export default async function handleOut(msg, data) {
 
       await this.editMessageText(updatedExpense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
         message_id,
+        inline_message_id,
         chat_id,
         parse_mode: 'Markdown',
         reply_markup: updatedExpense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)

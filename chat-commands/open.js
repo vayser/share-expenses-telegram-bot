@@ -9,7 +9,7 @@ export default async function handleList(msg, data) {
     async (msg, data, next) => {
       const {
         queryId,
-        chat: { id: chatId }
+        chat_id
       } = msg;
 
       const { expense } = data;
@@ -21,9 +21,9 @@ export default async function handleList(msg, data) {
         }
       }).execPopulate();
 
-      this.sendMessage(chatId, 'Expense details', {
+      this.sendMessage(chat_id, 'Expense details', {
         parse_mode: 'Markdown',
-        reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
+        reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS, { share: true })
       });
 
       this.answerCallbackQuery(queryId, '');

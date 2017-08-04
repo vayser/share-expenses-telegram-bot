@@ -10,7 +10,7 @@ export default async function handleOk(msg, data) {
     getCallbackUser,
     async (msg, data, next) => {
       const { expenseId, callbackUser } = data;
-      const { queryId, message_id, chat: { id: chat_id } } = msg;
+      let { queryId, message_id, inline_message_id, chat_id } = msg;
 
       const expense = await Expense.findById(expenseId);
 
@@ -36,6 +36,7 @@ export default async function handleOk(msg, data) {
 
       await this.editMessageText(expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
         message_id,
+        inline_message_id,
         chat_id,
         parse_mode: 'Markdown',
         reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
