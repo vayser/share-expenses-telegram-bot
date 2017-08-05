@@ -25,6 +25,7 @@ export default async function(msg) {
       id: expenseId,
       title: `Title: ${expense.title}. Amount: ${expense.amount}`,
       input_message_content: {
+        parse_mode: 'Markdown',
         message_text: expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS, { user })
       },
       reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
@@ -37,6 +38,7 @@ export default async function(msg) {
       id: expenseId,
       title: 'invalid',
       input_message_content: {
+        parse_mode: 'Markdown',
         message_text: 'test text'
       }
     }], {
