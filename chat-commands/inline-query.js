@@ -17,7 +17,15 @@ export default async function(msg) {
   } = msg;
 
   if (isValid(expenseId)) {
-    const expense = await Expense.findById(expenseId);
+    const expense = await Expense.findById(expenseId)
+      .populate('host')
+      .populate({
+        path: 'debtors',
+        populate: {
+          path: 'user'
+        }
+      });
+
     const user = await User.findOne({ telegramId: userId });
 
     this.answerInlineQuery(inline_query_id, [{
