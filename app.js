@@ -7,6 +7,9 @@ import start from './chat-commands/start';
 import list from './chat-commands/list';
 import open from './chat-commands/open';
 import ok from './chat-commands/ok';
+import remove from './chat-commands/remove';
+import lock from './chat-commands/lock';
+import unlock from './chat-commands/unlock';
 import out from './chat-commands/out';
 import repay from './chat-commands/repay';
 import unrepay from './chat-commands/unrepay';
@@ -53,7 +56,7 @@ bot.on('inline_query', async msg => {
 });
 
 bot.on('callback_query', async query => {
-  const commands = { ok, out, repay, unrepay, open };
+  const commands = { ok, out, repay, unrepay, open, remove, lock, unlock };
 
   let { data } = query;
 
@@ -68,13 +71,7 @@ bot.on('callback_query', async query => {
   }
 
   try {
-    await commands[data.command].apply(bot, [{
-      callbackFrom: query.from,
-      message_id: query.message && query.message.message_id,
-      chat_id: query.message && query.message.chat && query.message.chat.id,
-      inline_message_id: query.inline_message_id,
-      queryId: query.id
-    }, data]);
+    await commands[data.command].apply(bot, [query, data]);
   } catch (e) {
     console.log(pe.render(e));
   }

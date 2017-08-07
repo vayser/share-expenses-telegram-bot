@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import groupBy from 'lodash/groupBy';
 import timestamps from 'mongoose-timestamp';
 import constants from '../constants';
+import moment from 'moment';
 
 const { EXPENSE_STATUS, EXPENSE_REPLY_MARKUP, DEBTOR_STATUS } = constants;
 
@@ -35,7 +36,14 @@ let ExpenseSchema = new Schema({
   },
   title: {
     type: String
+  },
+  removed: {
+    type: Boolean
+  },
+  locked: {
+    type: Boolean
   }
+
 });
 
 ExpenseSchema.methods.getMessageText = function(markup, { user } = {}) {
@@ -66,10 +74,16 @@ ExpenseSchema.methods.isUserRepaid = function(userId) {
     });
 };
 
-ExpenseSchema.methods.getReplyMarkup = function(markup, { share } = {}) {
+ExpenseSchema.methods.getReplyMarkup = function(markup, {
+  share, remove, lock, unlock
+} = {}) {
   if (markup === EXPENSE_REPLY_MARKUP.LIST) {
+    const isRepaid = this.debtors.every(d => d.status === DEBTOR_STATUS.REPAID) && this.debtors.length > 0;
+
+    const repaidIcon = isRepaid ? '✅' : '🛑';
+
     return [{
-      text: `${this.title} : ${this.amount}`,
+      text: `${repaidIcon} [ ${this.amount} ] : ✏️${this.title}`,
       callback_data: JSON.stringify({
         expenseId: this.get('id'),
         command: 'open'
@@ -84,7 +98,28 @@ ExpenseSchema.methods.getReplyMarkup = function(markup, { share } = {}) {
 
     return {
       inline_keyboard: [
-        share && [{ switch_inline_query: this._id, text: 'Share' }],
+        share && [{ switch_inline_query: this._id, text: '✉️ Share' }],
+        remove && [{
+          text: '❌ Remove',
+          callback_data: JSON.stringify({
+            command: 'remove',
+            expenseId: this._id
+          })
+        }],
+        lock && [{
+          text: '🔒 Lock',
+          callback_data: JSON.stringify({
+            command: 'lock',
+            expenseId: this._id
+          })
+        }],
+        unlock && [{
+          text: '🔓 Unlock',
+          callback_data: JSON.stringify({
+            command: 'unlock',
+            expenseId: this._id
+          })
+        }],
         [{
           text: '+1 👍',
           callback_data: JSON.stringify({

@@ -48,7 +48,10 @@ export default async function handleInit(msg, data, match) {
 
         return this.sendMessage(chat_id, expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS, { user }), {
           parse_mode: 'Markdown',
-          reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS, { share: true })
+          reply_markup: expense.getReplyMarkup(
+            EXPENSE_REPLY_MARKUP.DETAILS,
+            { share: true, remove: true, lock: !expense.locked, unlock: expense.locked }
+          )
         });
       }
 

@@ -1,21 +1,25 @@
 import Expense from '../models/Expense';
 import Debtor from '../models/Debtor';
 import constants from '../constants';
-import { chain, getCallbackUser } from '../middlewares';
+import { chain, callbackGetUser } from '../middlewares';
 
 const { EXPENSE_REPLY_MARKUP, DEBTOR_STATUS } = constants;
 
-export default async function handleOk(msg, data) {
-  await chain.call(this, msg, data)(
-    getCallbackUser,
-    async (msg, data, next) => {
-      const { expenseId, callbackUser } = data;
-      let { queryId, message_id, inline_message_id, chat_id } = msg;
+export default async function handleOk(query, data) {
+  await chain.call(this, query, data)(
+    callbackGetUser,
+    async (query, data, next) => {
+      const { expenseId, user } = data;
+      const { id: queryId } = query;
 
       const expense = await Expense.findById(expenseId);
 
+      if (expense.locked) {
+        return this.answerCallbackQuery(queryId, 'Expense was locked');
+      }
+
       const debtor = await Debtor.create({
-        user: callbackUser.get('id'),
+        user: user.get('id'),
         expense: expense.get('id'),
         status: DEBTOR_STATUS.UNREPAID
       });
@@ -34,13 +38,23 @@ export default async function handleOk(msg, data) {
 
       await expense.save();
 
-      await this.editMessageText(expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
-        message_id,
-        inline_message_id,
-        chat_id,
-        parse_mode: 'Markdown',
-        reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
-      });
+      if (query.inline_message_id) {
+        await this.editMessageText(expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
+          inline_message_id: query.inline_message_id,
+          parse_mode: 'Markdown',
+          reply_markup: expense.getReplyMarkup(EXPENSE_REPLY_MARKUP.DETAILS)
+        });
+      } else {
+        await this.editMessageText(expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS), {
+          message_id: query.message.message_id,
+          chat_id: query.message.chat.id,
+          parse_mode: 'Markdown',
+          reply_markup: expense.getReplyMarkup(
+            EXPENSE_REPLY_MARKUP.DETAILS,
+            { share: true, remove: true, lock: !expense.locked, unlock: expense.locked }
+          )
+        });
+      }
 
       this.answerCallbackQuery(queryId, 'You are applied to expense');
     }

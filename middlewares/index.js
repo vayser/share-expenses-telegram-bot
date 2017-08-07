@@ -3,7 +3,7 @@ import Debtor from '../models/Debtor';
 import Chat from '../models/Chat';
 import User from '../models/User';
 
-export function chain(msg, data = {}) {
+export function chain(request, data = {}) {
   const that = this;
   return async function(...args) {
     return new Promise(async (resolve, reject) => {
@@ -15,7 +15,7 @@ export function chain(msg, data = {}) {
         }
 
         try {
-          await fn.call(that, msg, data, async breakChain => {
+          await fn.call(that, request, data, async breakChain => {
             if (breakChain) {
               return resolve();
             }
@@ -32,6 +32,10 @@ export function chain(msg, data = {}) {
 }
 
 export async function getChat(msg, data, next) {
+  if (!msg.chat) {
+    return next();
+  }
+
   const {
     chat: {
       id: chatId,
@@ -66,15 +70,41 @@ export async function getExpense(msg, data, next) {
   next();
 }
 
-export async function getCallbackUser(msg, data, next) {
+export async function callbackGetChat(query, data, next) {
+  // skip inline query. This query does not have chat info
+  if (query.inline_message_id) {
+    return next();
+  }
+
   const {
-    callbackFrom: {
+    message: {
+      chat: {
+        id: chatId,
+        title: chatTitle,
+        type: chatType
+      }
+    }
+  } = query;
+
+  const chat = await Chat.findOrCreate({ telegramId: chatId }, {
+    title: chatTitle,
+    type: chatType,
+    telegramId: chatId
+  });
+
+  data.chat = chat;
+  next();
+}
+
+export async function callbackGetUser(query, data, next) {
+  const {
+    from: {
       id: userId,
       first_name: firstName,
       last_name: lastName,
       username
     }
-  } = msg;
+  } = query;
 
   const user = await User.findOrCreate({ telegramId: userId }, {
     telegramId: userId,
@@ -83,7 +113,7 @@ export async function getCallbackUser(msg, data, next) {
     username
   });
 
-  data.callbackUser = user;
+  data.user = user;
   next();
 }
 
