@@ -1,12 +1,9 @@
 import constantMirror from 'constant-mirror';
 
 export default {
-  INIT_COMMAND_PATTERN: /\/init/,
   START_COMMAND_PATTERN: /\/start/,
-  OK_COMMAND_PATTERN: /^\/ok$/,
   LIST_COMMAND_PATTERN: /^\/list$/,
-  OUT_COMMAND_PATTERN: /^\/out$/,
-  COMMIT_COMMAND_PATTERN: /^\/commit$/,
+  CREATE_FLOW_COMMAND_PATTERN: new RegExp(`^((?!/start)(?!/list)(?!/init).)*$`),
   EXPENSE_REPLY_MARKUP: constantMirror('DETAILS', 'LIST'),
   EXPENSE_STATUS: {
     ACTIVE: 'active',

@@ -1,19 +1,21 @@
 import TelegramBot from 'node-telegram-bot-api';
 import PrettyError from 'pretty-error';
 import config from 'config';
-import init from './chat-commands/init';
+
 import createExpenseFlow from './chat-commands/create-expense-flow';
 import start from './chat-commands/start';
 import list from './chat-commands/list';
-import open from './chat-commands/open';
-import ok from './chat-commands/ok';
-import remove from './chat-commands/remove';
-import lock from './chat-commands/lock';
-import unlock from './chat-commands/unlock';
-import out from './chat-commands/out';
-import repay from './chat-commands/repay';
-import unrepay from './chat-commands/unrepay';
-import inlineQuery from './chat-commands/inline-query';
+
+import open from './callback-queries/open';
+import ok from './callback-queries/ok';
+import remove from './callback-queries/remove';
+import lock from './callback-queries/lock';
+import unlock from './callback-queries/unlock';
+import out from './callback-queries/out';
+import repay from './callback-queries/repay';
+import unrepay from './callback-queries/unrepay';
+
+import inlineQuery from './inline-queries/inline-query';
 
 import constants from './constants';
 import './db';
@@ -23,9 +25,9 @@ const pe = new PrettyError();
 const bot = new TelegramBot(config.get('botToken'), { polling: true });
 
 const {
-  INIT_COMMAND_PATTERN,
   LIST_COMMAND_PATTERN,
-  START_COMMAND_PATTERN
+  START_COMMAND_PATTERN,
+  CREATE_FLOW_COMMAND_PATTERN
 } = constants;
 
 function matcher(pattern, handler) {
@@ -42,14 +44,13 @@ function matcher(pattern, handler) {
   });
 }
 
-matcher(INIT_COMMAND_PATTERN, init);
 matcher(LIST_COMMAND_PATTERN, list);
 matcher(START_COMMAND_PATTERN, start);
-matcher(new RegExp(`^((?!/start)(?!/list)(?!/init).)*$`), createExpenseFlow);
+matcher(CREATE_FLOW_COMMAND_PATTERN, createExpenseFlow);
 
-bot.on('inline_query', async msg => {
+bot.on('inline_query', async query => {
   try {
-    await inlineQuery.call(bot, msg);
+    await inlineQuery.call(bot, query);
   } catch (e) {
     console.log(pe.render(e));
   }

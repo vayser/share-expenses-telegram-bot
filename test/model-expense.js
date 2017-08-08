@@ -1,5 +1,4 @@
 import expect from 'expect.js';
-import constants from '../constants';
 
 import Expense from '../models/Expense';
 import Debtor from '../models/Debtor';
@@ -21,7 +20,7 @@ describe('Expense', () => {
       const debtor2 = await getDebtor({ expense: expense.get('id') });
       expense.debtors.push(debtor1);
       expense.debtors.push(debtor2);
-      expect(expense.getPersonalCredit()).to.be.eql(66.67);
+      expect(expense.getPersonalCredit()).to.be.eql(100);
     });
   });
 });

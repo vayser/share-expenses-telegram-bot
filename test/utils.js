@@ -24,7 +24,7 @@ const data = {
   },
   chat: {
     title: 'Expense BOT test group',
-    type: 'group',
+    type: 'private',
     telegramId: -162982610
   }
 };
@@ -65,7 +65,7 @@ export function getTestMessageJSON(text, override) {
     chat:
      { id: -162982610,
        title: 'Expense BOT test group',
-       type: 'group',
+       type: 'private',
        all_members_are_administrators: true },
     date: 1476007995,
     entities: [{ type: 'bot_command', offset: 0, length: 5 }],

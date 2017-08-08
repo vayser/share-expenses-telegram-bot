@@ -1,11 +1,12 @@
 import Expense from '../models/Expense';
-import { chain, getChat, getUser } from '../middlewares';
+import { chain, getChat, getUser, privateOnly } from '../middlewares';
 
 import constants from '../constants';
 const { EXPENSE_FLOW_PHASES, EXPENSE_STATUS } = constants;
 
 export default async function handleInit(msg, data) {
   await chain.call(this, msg, data)(
+    privateOnly,
     getChat,
     getUser,
     async (msg, data, next) => {

@@ -31,6 +31,14 @@ export function chain(request, data = {}) {
   };
 }
 
+export async function privateOnly(msg, data, next) {
+  if (msg.chat.type !== 'private') {
+    return next(true);
+  }
+
+  next();
+}
+
 export async function getChat(msg, data, next) {
   if (!msg.chat) {
     return next();

@@ -11,6 +11,7 @@
   rules: {
     'require-jsdoc': 'off',
     'max-len': 'off',
+    'max-nested-callbacks': 'off',
     'object-curly-spacing': [2, 'always'],
     'camelcase': 'off'
   }
