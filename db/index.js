@@ -1,6 +1,8 @@
 import config from 'config';
 import mongoose from 'mongoose';
 mongoose.Promise = global.Promise;
+
+console.log(config);
 mongoose.connect(config.get('db.connection'));
 // mongoose.set('debug', true);
 

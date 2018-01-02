@@ -1,17 +1,17 @@
 import constants from '../constants';
-import { chain, getCallbackUser, getExpense } from '../middlewares';
+import { chain, callbackGetUser, getExpense } from '../middlewares';
 
 const { EXPENSE_REPLY_MARKUP } = constants;
 
-export default async function handleRepaid(msg, data) {
+export default async function handleRemove(msg, data) {
   await chain.call(this, msg, data)(
-    getCallbackUser,
+    callbackGetUser,
     getExpense,
-    async (msg, data, next) => {
-      const { expense, callbackUser } = data;
-      const { queryId, chat_id } = msg;
+    async (query, data, next) => {
+      const { expense, user } = data;
+      const { id: queryId } = query;
 
-      if (!expense.host.equals(callbackUser.get('id'))) {
+      if (!expense.host.equals(user.get('id'))) {
         return this.answerCallbackQuery(queryId, 'Only owner can edit this expense');
       }
 
@@ -21,7 +21,7 @@ export default async function handleRepaid(msg, data) {
       await expense.populate('host').execPopulate();
 
       this.sendMessage(
-        chat_id,
+        query.message.chat.id,
         `Expense was removed
         \r\n\r\n${expense.getMessageText(EXPENSE_REPLY_MARKUP.DETAILS, { user: expense.host })}`,
         {

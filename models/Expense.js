@@ -2,7 +2,6 @@ import mongoose, { Schema } from 'mongoose';
 import groupBy from 'lodash/groupBy';
 import timestamps from 'mongoose-timestamp';
 import constants from '../constants';
-import moment from 'moment';
 
 const { EXPENSE_STATUS, EXPENSE_REPLY_MARKUP, DEBTOR_STATUS } = constants;
 

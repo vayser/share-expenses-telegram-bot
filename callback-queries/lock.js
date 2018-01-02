@@ -8,7 +8,6 @@ export default async function handleRepaid(query, data) {
     callbackGetUser,
     getExpense,
     async (query, data, next) => {
-      console.log(query);
       const { expense, user } = data;
       const { id: queryId, message: { chat: { id: chatId } } } = query;
 

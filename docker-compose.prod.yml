@@ -1,0 +1,38 @@
+version: '2'
+services:
+  bot:
+    environment: 
+      - NODE_ENV=production
+    container_name: split-expense-bot
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/usr/src/app
+    command: yarn start
+    links:
+      - mongo
+    shm_size: 1g
+
+  mongo:
+    image: mongo
+    volumes:
+      - ./data:/data/db
+    ports:
+      - "27017:27017"
+
+  runner_bot:
+    container_name: split-expense-bot-runner
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes_from:
+      - bot
+    links:
+      - bot
+    shm_size: 1g
+
+networks:
+  default:
+    external:
+      name: split-expense_default
