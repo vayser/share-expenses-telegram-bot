@@ -5,7 +5,6 @@
   "main": "run-app.js",
   "dependencies": {
     "babel-cli": "^6.22.2",
-    "babel-node": "^6.5.3",
     "config": "^1.21.0",
     "constant-mirror": "^1.1.1",
     "lodash": "^4.17.4",
