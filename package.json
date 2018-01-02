@@ -36,7 +36,7 @@
     "npm": "^3.10.8"
   },
   "scripts": {
-    "start": "babel-node run-app.js",
+    "start": "./node_modules/.bin/babel-node run-app.js",
     "start-dev": "npm run nodemon",
     "nodemon": "nodemon run-app-dev",
     "test": "NODE_ENV=test node run-test.js"
